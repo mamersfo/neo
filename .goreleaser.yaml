@@ -1,0 +1,41 @@
+# GoReleaser config for neo (ADR-002: single static binary + co-located lib/).
+# Release with: git tag v0.1.0 && git push origin v0.1.0
+# (release.yml builds these; archives bundle neo/lib/ templates).
+version: 2
+
+project_name: neo
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: neo
+    main: .
+    binary: neo
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: [-s -w -X main.version={{.Version}}]
+
+archives:
+  - id: neo
+    name_template: "neo_{{.Version}}_{{.Os}}_{{.Arch}}"
+    formats: [tar.gz]
+    files:
+      - neo/lib/*
+
+checksum:
+  name_template: checksums.txt
+
+# Homebrew tap (TODO: create github.com/mamersfo/homebrew-tap and set
+# HOMEBREW_TAP_GITHUB_TOKEN for goreleaser; until then install from tarball).
+brews:
+  - name: neo
+    repository:
+      owner: mamersfo
+      name: homebrew-tap
+    homepage: https://github.com/mamersfo/neo
+    description: Supabase-CLI-like tool for Neo4j (local Docker + Cypher migrations)

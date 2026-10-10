@@ -147,8 +147,8 @@ Hence effective delivery Rust > TS > Py.
       20261010120000_create_person.cypher
     seed.cypher            # optional, runs after reset (committed)
   ```
-  - TOML shape unchanged: `[neo] image="neo4j:5-community" bolt_port=7687 http_port=7474 user="neo4j"`, `[migrations] dir="migrations"`.
-  - Rev.1: `serde` + `toml` crate. **Rev.2 (Go): `BurntSushi/toml` or `viper` (TOML)** — same file, same fields.
+  - TOML shape (decided 2026-10-10 — LTS): `[neo] image="neo4j:5.26" bolt_port=7687 http_port=7474 user="neo4j" password="<generated-on-init>"`, `[migrations] dir="migrations"`. `2025.x` only via override.
+  - Rev.1: `serde` + `toml` crate. **Rev.2 (Go, decided): `viper` (TOML)** — same file, same fields.
   - `init` idempotent; refuses overwrite without `--force`; project root found by walking up (like `git`).
 - **Consequences:** Safe to commit; deterministic `start`/`reset`.
 - **Alternatives:** YAML — rejected (TOML matches `cargo`- *and* Go-config conventions, single file).
@@ -160,7 +160,7 @@ Hence effective delivery Rust > TS > Py.
 - **Status:** Accepted (wording amended by ADR-007).
 - **Context:** `start`/`stop`/`status` must provision local Neo4j; first run pulls image.
 - **Decision:**
-  - Behavior unchanged: pull pinned `neo4j:5-community` if missing, container `neo-<project-hash>`
+  - Behavior unchanged: pull pinned `neo4j:5.26` LTS (decided 2026-10-10; `neo.toml` override for `2025.x`) if missing, container `neo-<project-hash>`
     with `NEO4J_AUTH`, Bolt+HTTP maps, `NEO4J_PLUGINS=["apoc"]`, healthcheck on `:7474`,
     stream pull progress, poll Bolt until ready (60s timeout); `stop` stops (not removes) by
     label `managed-by=neo`; `status` prints state + URLs + credentials discipline as before.
@@ -199,10 +199,11 @@ Hence effective delivery Rust > TS > Py.
 - **Context:** ADR-001 chose Rust from {Rust, TS, Python}. You pointed out the omission I
   flagged myself: Supabase CLI is Go, so any "Supabase-CLI-like" trade-off without Go is
   incomplete. Re-running the analysis with D: Go.
-- **Decision:** Implement `neo` in **Go (1.23+, `go.mod`, `gofmt`/`go vet` clean)**.
-  - CLI/config: `spf13/cobra` + `spf13/viper` (or `BurntSushi/toml` if Viper feels heavy).
+- **Decision:** Implement `neo` in **Go (1.23+, `go.mod`, `gofmt`/`go vet` clean)**. Module `github.com/mamersfo/neo` (decided 2026-10-10).
+  - CLI/config: `spf13/cobra` + `spf13/viper` (decided — viper).
   - Docker: official `github.com/docker/docker/client`.
   - Neo4j: official `github.com/neo4j/neo4j-go-driver/v5`.
+  - Auth (decided 2026-10-10): password auto-generated on `neo init`, stored in `neo.toml`, printed once on `start` (Supabase-like).
   - Logging: stdlib `log/slog` (JSON in `--output json` paths, human otherwise).
   - Errors: `fmt.Errorf("...: %w", err)` + `errors.Is/As`; exit-code mapping per ADR-003.
   - Layout: `cmd/` (one file per subcommand), `internal/config`, `internal/docker`,
