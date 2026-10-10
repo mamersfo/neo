@@ -18,14 +18,18 @@ builds:
     goos: [linux, darwin]
     goarch: [amd64, arm64]
     flags: [-trimpath]
-    ldflags: [-s -w -X main.version={{.Version}}]
+    ldflags:
+      - -s
+      - -w
+      - -X main.version={{.Version}}
 
 archives:
   - id: neo
     name_template: "neo_{{.Version}}_{{.Os}}_{{.Arch}}"
     formats: [tar.gz]
     files:
-      - neo/lib/*
+      - src: neo/lib/*
+        dst: lib/
 
 checksum:
   name_template: checksums.txt
