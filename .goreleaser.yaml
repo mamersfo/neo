@@ -30,12 +30,13 @@ archives:
 checksum:
   name_template: checksums.txt
 
-# Homebrew tap (TODO: create github.com/mamersfo/homebrew-tap and set
-# HOMEBREW_TAP_GITHUB_TOKEN for goreleaser; until then install from tarball).
-brews:
-  - name: neo
-    repository:
-      owner: mamersfo
-      name: homebrew-tap
-    homepage: https://github.com/mamersfo/neo
-    description: Supabase-CLI-like tool for Neo4j (local Docker + Cypher migrations)
+# Homebrew tap — DISABLED until github.com/mamersfo/homebrew-tap exists.
+# To re-enable: uncomment, create the tap repo, and set HOMEBREW_TAP_GITHUB_TOKEN
+# in release.yml. (Disabled 2026-10-10: it fails every tag build without them.)
+# brews:
+#   - name: neo
+#     repository:
+#       owner: mamersfo
+#       name: homebrew-tap
+#     homepage: https://github.com/mamersfo/neo
+#     description: Supabase-CLI-like tool for Neo4j (local Docker + Cypher migrations)
